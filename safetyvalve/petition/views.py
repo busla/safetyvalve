@@ -9,7 +9,6 @@ from math import floor
 from datetime import datetime, timedelta
 from django.utils import timezone
 from urllib.parse import urlencode, quote_plus, unquote_plus
-
 from django import forms
 from django.db.models import Count, Q
 from django.conf import settings
@@ -17,11 +16,11 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.template import Context
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext
+from django.utils.translation import ugettext as _
 
 from althingi.althingi_settings import CURRENT_SESSION_NUM
 
@@ -31,7 +30,7 @@ from petition.models import Petition
 
 from icekey.utils import authenticate
 
-from .models import Signature
+from .models import Signature, SignatureWaiting
 from .utils import convert_petition_to_plaintext_email
 
 def all(request):
@@ -90,14 +89,14 @@ def email(request, petition_id):
     c = {}
 
     class EmailForm(forms.Form):
-        email = forms.EmailField(label=ugettext('Email address'))
-        confirm_email = forms.EmailField(label=ugettext('Confirm email address'))
+        email = forms.EmailField(label=_('Email address'))
+        confirm_email = forms.EmailField(label=_('Confirm email address'))
 
         def clean(self):
             if (self.cleaned_data.get('email') !=
                 self.cleaned_data.get('confirm_email')):
                 raise forms.ValidationError(
-                    ugettext("Email addresses must match")
+                    _("Email addresses must match")
                 )
             return self.cleaned_data
 
@@ -158,9 +157,9 @@ def get_public_signatures(request, petition_id):
         o = []
         signature = {}
         signature = {'signature_stance': s.stance,
-                     'signature_name': '%s %s' % (s.user.first_name, s.user.last_name) if s.show_public else ugettext('[ Name hidden ]')}
+                     'signature_name': '%s %s' % (s.user.first_name, s.user.last_name) if s.show_public else _('[ Name hidden ]')}
         o.append(signature)
-        o.append(s.user.username if s.show_public else ugettext('[ SSN hidden ]'))
+        o.append(s.user.username if s.show_public else _('[ SSN hidden ]'))
         o.append(s.date_created.strftime("%Y-%m-%d %H:%M:%S"))
 
         response.append(o)
@@ -326,12 +325,12 @@ def search_terms(request):
     c = {}
 
     class SearchForm(forms.Form):
-        search_terms = forms.CharField(label=ugettext('Search Terms'), required=False)
+        search_terms = forms.CharField(label=_('Search Terms'), required=False)
 
         def clean(self):
             if (self.cleaned_data.get('search_terms') == '' or self.cleaned_data.get('search_terms') == ' '):
                 raise forms.ValidationError(
-                    ugettext("You must enter a search term")
+                    _("You must enter a search term")
                 )
             return self.cleaned_data
 
@@ -355,6 +354,17 @@ def search_results(request, search_terms):
     petitions = Petition.objects.search(clean_search_terms)
 
     return index(request, 'Search Results', petitions, clean_search_terms)
+
+def collect(request, petition_id, stance):
+
+    p = get_object_or_404(Petition, pk=petition_id)
+
+    if SignatureWaiting.objects.filter(user=request.user, petition=p).count():
+        SignatureWaiting.objects.filter(user=request.user, petition=p).delete()
+    s = SignatureWaiting(user=request.user, petition=p, stance=stance)
+    s.save()
+    print(SignatureWaiting.objects.all())
+    return JsonResponse({'success': True, 'data':_('Thanks for contacting us, we will be in touch soon')})
 
 
 

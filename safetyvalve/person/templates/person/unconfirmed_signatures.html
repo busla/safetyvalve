@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans page_title %}{% endblock %}
+
+{% block css %}
+{{block.super}}
+    <link href="{% static 'petition/css/jquery.dataTables.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block javascript %}
+{{block.super}}
+    <script src="{% static 'petition/js/petition.js' %}" type="text/javascript"></script>
+    <script src="{% static 'petition/js/js.cookie.js' %}" type="text/javascript"></script>
+    <script src="{% static 'petition/js/jquery.sharrre.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'petition/js/jquery.dataTables.min.js' %}" type="text/javascript"></script>   
+{% endblock %}
+
+{% block content %}
+    <div id="my_page_wrapper" class="container-fluid">
+
+        <div class-"row-fluid">
+
+            <h2><i class="fa fa-pencil-square-o"></i> {% trans 'My unconfirmed Signatures' %}</h2>            
+            <table id="unconfirmed-signatures">
+                
+                <thead>
+                    <th><h2>{% trans 'Name' %}</h2></th>
+                    <th><h2>{% trans 'Date' %}</h2></th>
+                </thead>
+
+                <tbody>
+                  {% for signature in unconfirmed_signatures %}
+                    <tr>
+                      <td>{{signature.user}}</td>
+                      <td>{{signature.stance}}</td>
+                      <td>{{signature.petition}}</td>
+                      <td>{{signature.date_created}}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+
+            </table>
+        
+        </div>
+
+    </div>
+{% endblock %}

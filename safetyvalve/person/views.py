@@ -3,7 +3,7 @@ import json
 
 from math import floor
 from urllib.parse import urlencode
-
+from django.views.generic import ListView
 from django import forms
 from django.conf import settings
 from django.contrib.auth import logout
@@ -13,12 +13,15 @@ from django.shortcuts import HttpResponse, HttpResponseRedirect
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.template import Context
-from django.utils.translation import ugettext
+from django.utils.translation import ugettext as _
 
-from petition.models import Signature
+from petition.models import Signature, SignatureWaiting
 
 from icekey.utils import authenticate
 
+class UnconfirmedSignaturesList(ListView):
+    model = SignatureWaiting    
+    context_object_name = 'unconfirmed_signatures'
 
 def get_user_signatures(request):
 
@@ -70,7 +73,7 @@ def get_user_signatures(request):
                         'petition_name': s.petition.name.capitalize(),
                         'petition_id': s.petition.id}
             o.append(petition)
-            o.append(ugettext('Yes') if s.show_public == 1 else ugettext('No'))
+            o.append(_('Yes') if s.show_public == 1 else _('No'))
             o.append(s.date_created.strftime("%Y-%m-%d %H:%M:%S"))
 
             response.append(o)
@@ -97,12 +100,12 @@ def my_page(request):
 
     class EmailForm(forms.Form):
         email = forms.EmailField(
-            label=ugettext('Email address'),
+            label=_('Email address'),
             initial=request.user.email,
             localize=True,
             error_messages={
-                'required': ugettext('This field is required'),
-                'invalid': ugettext('Please enter a valid e-mail address')
+                'required': _('This field is required'),
+                'invalid': _('Please enter a valid e-mail address')
             })
 
         def clean(self):
@@ -118,7 +121,7 @@ def my_page(request):
         form = EmailForm()
 
     context = Context({
-        'signatures_url': settings.INSTANCE_URL + reverse('get_user_signatures') + '',
+        'signatures_url': settings.INSTANCE_URL + reverse('get_user_signatures') + '',        
         'page_title': 'My Page',
         'form': form,
         'form_success': form_success

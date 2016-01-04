@@ -67,6 +67,7 @@
               <ul class="nav">
                 <li class="active"><a href="/">{% trans 'Hottest' %}</a></li>
                 <li><a href="/ollmal/">{% trans 'All Issues' %}</a></li>
+                <li><a href="/ostadfestar-undirskriftir/">{% trans 'Óstaðfestar undirskriftir' %}</a></li>                
                 <li><a href="/minsida/">{% trans 'My Page' %}</a></li>
                 <li><a href="/frumvarp/search/">{% trans 'Search' %}</a></li>
                 <li><a href="/um-okkur/">{% trans 'About Us' %}</a></li>
@@ -87,6 +88,7 @@
           <ul>
             <li><a href="/" {% if page_title == 'Hottest' %}class="selected"{% endif %}>{% trans 'Hottest' %}</a></li>
             <li><a href="/ollmal/" {% if page_title == 'All Issues' %}class="selected"{% endif %}>{% trans 'All Issues' %}</a></li>
+            <li><a href="/ostadfestar-undirskriftir/" {% if page_title == 'Unconfirmed signatures' %}class="selected"{% endif %}>{% trans 'Unconfirmed signatures' %}</a></li>
             <li><a href="/frumvarp/search/" {% if page_title == 'Search Results' or page_title == 'Search' %}class="selected"{% endif %}>{% trans 'Search' %}</a></li>
             <li><a href="/minsida/" {% if page_title == 'My Page' %}class="selected"{% endif %}>{% trans 'My Page' %}</a></li>
             <li><a href="/um-okkur/" {% if page_title == 'About Us' %}class="selected"{% endif %}>{% trans 'About Us' %}</a></li>

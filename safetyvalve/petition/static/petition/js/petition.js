@@ -1,5 +1,17 @@
 
 $(function () {
+    var csrftoken = Cookies.get('csrftoken');
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
 
     $('div.unsign .addremove_signature').bind('click', function (e) {
         var msg = $('#msg_sure').text();
@@ -37,19 +49,32 @@ $(function () {
     });
 
     $('.post_selection_container .addremove_signature').bind('click', function(e) {
+        e.preventDefault();
         container = $(this).parent().parent();
 
         show_public = container.find('.show_public').is(':checked');
         stance = container.find('.stance').val();
 
         petition_id = container.data('id');
+        url = '/frumvarp/' + petition_id + '/safna/' + stance + '/?show_public=' + (show_public ? '1' : '0');
+        
+        $.ajax({
+            type: 'POST',
+            url: url,
+            dataType: 'json',
+            success: function(json) {
+              console.log(json);            
+            },
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }          
+        });
+        //url = '/frumvarp/' + petition_id + '/skra/' + stance + '/?show_public=' + (show_public ? '1' : '0');
 
-        url = '/frumvarp/' + petition_id + '/skra/' + stance + '/?show_public=' + (show_public ? '1' : '0');
+        //location.href = url;
 
-        location.href = url;
-
-        e.preventDefault();
-        return false;
+        
+        
     });
 
     $('.post_selection_container .signature_cancel').bind('click', function(e) {
