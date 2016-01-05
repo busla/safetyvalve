@@ -5,6 +5,36 @@ $(function () {
         // these HTTP methods do not require CSRF protection
         return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
     }
+
+    /**
+     * POST signature
+     */
+
+    function postSignature(url, container) {      
+       
+        $.ajax({
+            type: 'POST',
+            url: url,            
+            success: function(data) {
+              console.log(data);   
+              //console.log(container); 
+              
+              container.after(data);
+              container.remove()
+              //container.load(json);
+              //container.replaceWith(json);
+            },
+            error : function(xhr,errmsg,err) {
+                console.log(xhr, errmsg, err)                
+                //console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }          
+        });      
+    }
+
+    /**
+     * Use CSRF cookie in all POST requests.     
+     */
+
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
             if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -13,22 +43,31 @@ $(function () {
         }
     });
 
-    $('div.unsign .addremove_signature').bind('click', function (e) {
+    /**
+     * Unsign petition
+     */
+
+    $('body').on('click', 'div.unsign .addremove_signature', function (e) {
+        e.preventDefault();
         var msg = $('#msg_sure').text();
         if (confirm(msg)) {
             container = $(this).parent();
 
             petition_id = container.data('id');
 
-            url = '/frumvarp/' + petition_id + '/afskra/';
-            location.href = url;
+            url = '/frumvarp/' + petition_id + '/afsafna/';
+            postSignature(url, container);            
         }
 
-        e.preventDefault();
-        return false;
+      
     });
+    
+    /**
+     * Should signature be public?
+     */    
 
-    $('.pre_selection_container .addremove_signature').bind('click', function(e) {
+    $('body').on('click', '.pre_selection_container .addremove_signature', function(e) {
+        e.preventDefault();
         container = $(this).parent().parent();
 
         stance = '';
@@ -44,31 +83,24 @@ $(function () {
         container.find('.pre_selection_container').hide();
         container.find('.post_selection_container').show();
 
-        e.preventDefault();
-        return false;
     });
+    
+    /**
+     * Make signature public and POST
+     */
 
-    $('.post_selection_container .addremove_signature').bind('click', function(e) {
+    $('body').on('click', '.post_selection_container .addremove_signature', function(e) {
         e.preventDefault();
         container = $(this).parent().parent();
 
         show_public = container.find('.show_public').is(':checked');
         stance = container.find('.stance').val();
 
-        petition_id = container.data('id');
+        petition_id = container.data('id');        
+
         url = '/frumvarp/' + petition_id + '/safna/' + stance + '/?show_public=' + (show_public ? '1' : '0');
-        
-        $.ajax({
-            type: 'POST',
-            url: url,
-            dataType: 'json',
-            success: function(json) {
-              console.log(json);            
-            },
-            error : function(xhr,errmsg,err) {
-                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            }          
-        });
+        postSignature(url, container);
+
         //url = '/frumvarp/' + petition_id + '/skra/' + stance + '/?show_public=' + (show_public ? '1' : '0');
 
         //location.href = url;
@@ -77,7 +109,11 @@ $(function () {
         
     });
 
-    $('.post_selection_container .signature_cancel').bind('click', function(e) {
+    /**
+     * Cancel voting
+     */
+
+    $('body').on('click', '.post_selection_container .signature_cancel', function(e) {
         container = $(this).parent().parent();
 
         container.find('.post_selection_container').hide();

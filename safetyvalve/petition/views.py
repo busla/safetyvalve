@@ -19,6 +19,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.template import Context
+from django.template.response import TemplateResponse
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 
@@ -287,7 +288,8 @@ def index(request, page_title, petitions, search_terms=""):
     oppose_petition_ids = []
     endorse_petition_ids = []
     if request.user.is_authenticated():
-        signatures = Signature.objects.filter(user=request.user)
+        #signatures = Signature.objects.filter(user=request.user)
+        signatures = SignatureWaiting.objects.filter(user=request.user)
         oppose_petition_ids = [s.petition_id for s in signatures if s.stance == 'oppose']
         endorse_petition_ids = [s.petition_id for s in signatures if s.stance == 'endorse']
 
@@ -363,8 +365,8 @@ def collect(request, petition_id, stance):
         SignatureWaiting.objects.filter(user=request.user, petition=p).delete()
     s = SignatureWaiting(user=request.user, petition=p, stance=stance)
     s.save()
-    print(SignatureWaiting.objects.all())
-    return JsonResponse({'success': True, 'data':_('Thanks for contacting us, we will be in touch soon')})
+
+    return TemplateResponse(request, 'stub/unsign_button.html', {'p': p, 'stance': s.stance})
 
 
 
@@ -405,6 +407,17 @@ def unsign(request, petition_id):
     else:
         s.delete()
     return HttpResponseRedirect('/')
+
+
+def uncollect(request, petition_id):
+
+    p = get_object_or_404(Petition, pk=petition_id)
+    s = get_object_or_404(SignatureWaiting, user=request.user, petition=p)
+
+    s.delete()
+    return TemplateResponse(request, 'stub/sign_button.html', {'p': p})
+    
+
 
 
 def _receipt(request, petition_id, subject, message, html=None):

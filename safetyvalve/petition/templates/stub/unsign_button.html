@@ -2,10 +2,11 @@
 <div class="signature_container unsign" data-id="{{p.id}}">
     <div class="signature_button addremove_signature unsign">
         {% if stance == 'oppose' %}
-            <i class="fa fa-pencil-square"></i> {% trans 'Remove opposition' %} <small>(<i class="fa fa-thumbs-down"></i>)</small>
+            <span class="fa fa-pencil-square"></span> {% trans 'Remove opposition' %} <small>(<span class="fa fa-thumbs-down"></span>)
+          </small>
         {% else %}
             {% if stance == 'endorse' %}
-                <i class="fa fa-pencil-square"></i> {% trans 'Remove endorsement' %} <small>(<i class="fa fa-thumbs-up"></i>)</small>
+                <span class="fa fa-pencil-square"></span> {% trans 'Remove endorsement' %} <small>(<span class="fa fa-thumbs-up"></span>)</small>
             {% endif %}
         {% endif %}
     </div>
